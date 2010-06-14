@@ -141,7 +141,8 @@ scribeHandler::scribeHandler(unsigned long int server_port, const std::string& c
 
 scribeHandler::~scribeHandler() {
   deleteCategoryMap(categories);
-  deleteCategoryMap(category_prefixes);
+  deleteCategoryMap(category_regex);
+  deleteRegexBlacklistMap(category_regex_blacklist);
 }
 
 // Returns the handler status, but overwrites it with WARNING if it's
@@ -319,36 +320,64 @@ shared_ptr<store_list_t> scribeHandler::createNewCategory(
   const string& category) {
 
   shared_ptr<store_list_t> store_list;
+  bool blacklisted = false;
+  bool validMatch = false;
 
-  // First, check the list of category prefixes for a model
-  category_map_t::iterator cat_prefix_iter = category_prefixes.begin();
-  while (cat_prefix_iter != category_prefixes.end()) {
-    string::size_type len = cat_prefix_iter->first.size();
-    if (cat_prefix_iter->first.compare(0, len-1, category, 0, len-1) == 0) {
-      // Found a matching prefix model
+  // First, check the list of category regex for a model
+  category_map_t::iterator cat_regex_iter = category_regex.begin();
+  while (cat_regex_iter != category_regex.end()) {
 
-      shared_ptr<store_list_t> pstores = cat_prefix_iter->second;
-      for (store_list_t::iterator store_iter = pstores->begin();
-          store_iter != pstores->end(); ++store_iter) {
-        createCategoryFromModel(category, *store_iter);
-      }
-      category_map_t::iterator cat_iter = categories.find(category);
+	blacklisted = false;
 
-      if (cat_iter != categories.end()) {
-        store_list = cat_iter->second;
-      } else {
-        LOG_OPER("failed to create new prefix store for category <%s>",
-                 category.c_str());
-      }
+	//Initialize Regex
+	boost::regex _regex(cat_regex_iter->first);
+	//Check for a match
+	validMatch = boost::regex_match(category, _regex);
 
-      break;
-    }
-    cat_prefix_iter++;
-  }
+	if (validMatch) {
+
+		//Check for Blacklisted Regex Categories
+		category_regex_blacklist_map_t::iterator cat_regex_blacklist_iter =category_regex_blacklist.begin();
+		std::vector<std::string> blacklistVector =cat_regex_blacklist_iter->first;
+		std::vector<std::string>::iterator blacklistIter =blacklistVector.begin();
+
+		while (blacklistIter != blacklistVector.end()) {
+
+			//Note: If a store with the same category already exists it will be executed; As a solution to manage collisions
+			if (0 == blacklistIter->compare(category)) {
+				std::string error = "Category <" + category + "> is Blacklisted.";
+				LOG_OPER("%s", error.c_str());
+				blacklisted = true;
+				break;
+			}
+			blacklistIter++;
+		}
+
+		if (!blacklisted){
+			 shared_ptr<store_list_t> pstores = cat_regex_iter->second;
+			      for (store_list_t::iterator store_iter = pstores->begin();
+			          store_iter != pstores->end(); ++store_iter) {
+			        createCategoryFromModel(category, *store_iter);
+			      }
+
+		}
+		category_map_t::iterator cat_iter = categories.find(category);
+
+		if (cat_iter != categories.end()) {
+			store_list = cat_iter->second;
+		} else {
+			LOG_OPER("failed to create new regex store for category <%s>",
+					category.c_str());
+		}
+		break;
+	}
+	cat_regex_iter++;
+}
 
 
   // Then try creating a store if we have a default store defined
-  if (store_list == NULL && !defaultStores.empty()) {
+  if (store_list == NULL &&
+		  !defaultStores.empty()) {
     for (store_list_t::iterator store_iter = defaultStores.begin();
         store_iter != defaultStores.end(); ++store_iter) {
       createCategoryFromModel(category, *store_iter);
@@ -505,9 +534,11 @@ void scribeHandler::stopStores() {
   }
   defaultStores.clear();
   deleteCategoryMap(categories);
-  deleteCategoryMap(category_prefixes);
+  deleteCategoryMap(category_regex);
+  deleteRegexBlacklistMap(category_regex_blacklist);
 
-}
+  	}
+
 
 void scribeHandler::shutdown() {
   RWGuard monitor(*scribeHandlerLock, true);
@@ -635,7 +666,8 @@ void scribeHandler::initialize() {
     // If the new configuration failed we'll run with
     // nothing configured and status set to WARNING
     deleteCategoryMap(categories);
-    deleteCategoryMap(category_prefixes);
+    deleteCategoryMap(category_regex);
+    deleteRegexBlacklistMap(category_regex_blacklist);
   }
 
 
@@ -753,11 +785,51 @@ shared_ptr<StoreQueue> scribeHandler::configureStoreCategory(
     is_default = true;
   }
 
-  bool is_prefix_category = (!category.empty() &&
-                             category[category.size() - 1] == '*' &&
-                             !category_list);
+  //Check for Regex category
+  	std::string _tRegex;
+  	bool isRegex;
 
-  std::string type;
+  	store_conf->getString("regex", _tRegex);
+  	if (0 == _tRegex.compare("true"))
+  		isRegex = true;
+  	else
+  		isRegex = false;
+
+  	//Check for Invalid Regex Expression in Category
+  	//Ugly Hack
+  	if (isRegex) {
+  		try {
+
+  			boost::regex re(category);
+  			std::string dummy = "dummy";
+  			boost::regex_match(dummy, re);
+
+  		} catch (...) {
+  			std::string error = "Invalid Regex Expression in Category: "
+  					+ category;
+  			LOG_OPER("%s", error.c_str());
+  			return shared_ptr<StoreQueue> ();
+
+  		}
+  	}
+
+  	bool is_regex_category = (!category.empty() && isRegex && !category_list);
+
+  	//Get the strings which are meant to be blacklisted from a Regex match
+  	std::vector<std::string> regexBlacklist;
+  	std::string _tRegexBlacklist;
+
+  	store_conf->getString("regex_blacklist", _tRegexBlacklist);
+
+  	//Parse and Push to Vector
+  	stringstream _ss(_tRegexBlacklist);
+  	std::string _temp;
+
+  	while (_ss >> _temp) {
+  		regexBlacklist.push_back(_temp);
+  	}
+
+    std::string type;
   if (!store_conf->getString("type", type) ||
       type.empty()) {
     string errormsg("Bad config - no type for store with category: ");
@@ -772,7 +844,7 @@ shared_ptr<StoreQueue> scribeHandler::configureStoreCategory(
   try {
     if (model != NULL) {
       // Create a copy of the model if we want a new thread per category
-      if (newThreadPerCategory && !is_default && !is_prefix_category) {
+      if (newThreadPerCategory && !is_default && !is_regex_category) {
         pstore = shared_ptr<StoreQueue>(new StoreQueue(model, category));
       } else {
         pstore = model;
@@ -782,14 +854,8 @@ shared_ptr<StoreQueue> scribeHandler::configureStoreCategory(
       string store_name;
       bool is_model, multi_category, categories;
 
-      /* remove any *'s from category name */
-      if (is_prefix_category)
-        store_name = category.substr(0, category.size() - 1);
-      else
-        store_name = category;
-
       // Does this store define multiple categories
-      categories = (is_default || is_prefix_category || category_list);
+      categories = (is_default || is_regex_category || category_list);
 
       // Determine if this store will actually handle multiple categories
       multi_category = !newThreadPerCategory && categories;
@@ -825,16 +891,21 @@ shared_ptr<StoreQueue> scribeHandler::configureStoreCategory(
   if (is_default) {
     LOG_OPER("Creating default store");
     defaultStores.push_back(pstore);
-  } else if (is_prefix_category) {
-    shared_ptr<store_list_t> pstores;
-    category_map_t::iterator category_iter = category_prefixes.find(category);
-    if (category_iter != category_prefixes.end()) {
-      pstores = category_iter->second;
-    } else {
-      pstores = shared_ptr<store_list_t>(new store_list_t);
-      category_prefixes[category] = pstores;
-    }
-    pstores->push_back(pstore);
+  } else if (is_regex_category) {
+	  shared_ptr<store_list_t> pstores;
+	  category_map_t::iterator category_iter =
+				category_regex.find(category);
+
+		if (category_iter != category_regex.end()) {
+			pstores=category_iter->second;
+		}
+		else{
+			pstores = shared_ptr<store_list_t>(new store_list_t);
+			category_regex[category] = pstores;
+			category_regex_blacklist[regexBlacklist] = pstores;
+		}
+
+		pstores->push_back(pstore);
   } else if (!pstore->isModelStore()) {
     // push the new store onto the new map if it's not just a model
     shared_ptr<store_list_t> pstores;
@@ -877,4 +948,23 @@ void scribeHandler::deleteCategoryMap(category_map_t& cats) {
     pstores->clear();
   } // for each category
   cats.clear();
+}
+
+// Clear Blacklisted Categories for Regex Stores
+void scribeHandler::deleteRegexBlacklistMap(category_regex_blacklist_map_t& blacklist){
+  for(category_regex_blacklist_map_t::iterator blacklist_iter=blacklist.begin();
+	  blacklist_iter!=blacklist.end();
+      ++blacklist_iter){
+
+	  vector <string> blacklist_cats=blacklist_iter->first;
+
+	  for(vector<string>::iterator blacklist_cats_iter=blacklist_cats.begin();
+				  blacklist_cats_iter!=blacklist_cats.end();
+				  ++blacklist_cats_iter){
+
+		  category_map_t temp;
+		  temp[(*blacklist_cats_iter)]=blacklist_iter->second;
+		  deleteCategoryMap(temp);
+		  }
+  }
 }

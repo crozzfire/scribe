@@ -45,6 +45,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
+#include <boost/regex.hpp>
 
 
 // For security reasons we can't release everything that's compiled
