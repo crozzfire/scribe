@@ -30,9 +30,6 @@
 typedef std::vector<boost::shared_ptr<StoreQueue> > store_list_t;
 typedef std::map<std::string, boost::shared_ptr<store_list_t> > category_map_t;
 
-//vector of strings mapped to a StoreQueue
-typedef std::map<std::vector<std::string>, boost::shared_ptr<store_list_t> > category_regex_blacklist_map_t;
-
 class scribeHandler : virtual public scribe::thrift::scribeIf,
                               public facebook::fb303::FacebookBase {
 
@@ -88,7 +85,7 @@ class scribeHandler : virtual public scribe::thrift::scribeIf,
   // The StoreQueue contains a store, which could contain additional stores.
   category_map_t categories;
   category_map_t category_regex;
-  category_regex_blacklist_map_t category_regex_blacklist;
+  category_map_t category_regex_blacklist;
 
   // the default stores
   store_list_t defaultStores;
@@ -120,7 +117,6 @@ class scribeHandler : virtual public scribe::thrift::scribeIf,
  protected:
   bool throttleDeny(int num_messages); // returns true if overloaded
   void deleteCategoryMap(category_map_t& cats);
-  void deleteRegexBlacklistMap(category_regex_blacklist_map_t& blacklist);
   const char* statusAsString(facebook::fb303::fb_status new_status);
   bool createCategoryFromModel(const std::string &category,
                                const boost::shared_ptr<StoreQueue> &model);
