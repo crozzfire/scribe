@@ -67,6 +67,7 @@ AM_CPPFLAGS += -I$(thrift_home)/include/thrift
 AM_CPPFLAGS += -I$(fb303_home)/include/thrift
 AM_CPPFLAGS += -I$(fb303_home)/include/thrift/fb303
 AM_CPPFLAGS += -I$(hadoop_home)/include
+AM_CPPFLAGS += -I$(cppunit_home)/include
 AM_CPPFLAGS += $(BOOST_CPPFLAGS)
 AM_CPPFLAGS += $(FB_CPPFLAGS) $(DEBUG_CPPFLAGS)
 
@@ -98,14 +99,19 @@ endif
 
 # Binaries -- multiple progs can be defined.
 bin_PROGRAMS = scribed
+check_PROGRAMS = tests
 scribed_SOURCES = store.cpp store_queue.cpp conf.cpp file.cpp conn_pool.cpp scribe_server.cpp network_dynamic_config.cpp dynamic_bucket_updater.cpp $(FB_SOURCES) $(ENV_SOURCES)
+tests_SOURCES = store.cpp store_queue.cpp conf.cpp file.cpp conn_pool.cpp network_dynamic_config.cpp dynamic_bucket_updater.cpp $(FB_SOURCES) $(ENV_SOURCES) UnitTests/mock_scribe_server.cpp UnitTests/servertests.cpp UnitTests/tests_main.cpp 
 if USE_SCRIBE_HDFS
   scribed_SOURCES += HdfsFile.cpp
+  tests_SOURCES += HdfsFile.cpp
 endif
 scribed_LDADD = $(EXTERNAL_LIBS) $(INTERNAL_LIBS)
+tests_LDADD = -L$(cppunit_home)/lib -lstdc++ -lcppunit -ldl $(EXTERNAL_LIBS) $(INTERNAL_LIBS)
 
 if SHARED
 scribed_DEPENDENCIES = libscribe.so
+tests_DEPENDENCIES = libscribe.so
 endif
 
 # Section 4 ##############################################################################
