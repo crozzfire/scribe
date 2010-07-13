@@ -100,8 +100,8 @@ endif
 # Binaries -- multiple progs can be defined.
 bin_PROGRAMS = scribed
 check_PROGRAMS = tests
-scribed_SOURCES = store.cpp store_queue.cpp conf.cpp file.cpp conn_pool.cpp scribe_server.cpp network_dynamic_config.cpp dynamic_bucket_updater.cpp $(FB_SOURCES) $(ENV_SOURCES)
-tests_SOURCES = store.cpp store_queue.cpp conf.cpp file.cpp conn_pool.cpp network_dynamic_config.cpp dynamic_bucket_updater.cpp $(FB_SOURCES) $(ENV_SOURCES) UnitTests/mock_scribe_server.cpp UnitTests/servertests.cpp UnitTests/tests_main.cpp 
+scribed_SOURCES = store.cpp store_queue.cpp conf.cpp file.cpp conn_pool.cpp scribe_server.cpp network_dynamic_config.cpp dynamic_bucket_updater.cpp main.cpp $(FB_SOURCES) $(ENV_SOURCES)
+tests_SOURCES = store.cpp store_queue.cpp conf.cpp file.cpp conn_pool.cpp scribe_server.cpp network_dynamic_config.cpp dynamic_bucket_updater.cpp $(FB_SOURCES) $(ENV_SOURCES) UnitTests/servertests.cpp UnitTests/store_queue_tests.cpp UnitTests/tests_main.cpp 
 if USE_SCRIBE_HDFS
   scribed_SOURCES += HdfsFile.cpp
   tests_SOURCES += HdfsFile.cpp

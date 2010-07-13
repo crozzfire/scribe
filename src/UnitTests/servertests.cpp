@@ -11,12 +11,14 @@ using namespace std;
 CPPUNIT_TEST_SUITE_REGISTRATION(ServerTests);
 
 void ServerTests::setUp(){
+	g_Handler->reinitialize();
 }
 
 void ServerTests::tearDown(){
 }
 
 void ServerTests::logResultCheck(){
+	ResultCode result;
 
 	//Valid LogEntry
 	boost::shared_ptr<LogEntry> msg(new LogEntry());
@@ -32,10 +34,24 @@ void ServerTests::logResultCheck(){
 	messages.push_back(*msg);
 	messages.push_back(*b_msg);
 
-	ResultCode result = g_Handler->Log(messages);
+	result = g_Handler->Log(messages);
 
 	CPPUNIT_ASSERT(result == OK);
 	CPPUNIT_ASSERT(result != TRY_LATER);
+
+	boost::shared_ptr<LogEntry> invalidCat(new LogEntry());
+	invalidCat->category="!@#!#@GSDGFDS@#$#@";
+	invalidCat->message="SDGDSFGW#$^#$^#$";
+
+	vector<LogEntry> invalidCats;
+	invalidCats.push_back(*invalidCat);
+	g_Handler->status = STOPPING;
+	result = g_Handler->Log(invalidCats);
+
+	CPPUNIT_ASSERT(result != OK);
+	CPPUNIT_ASSERT(result == TRY_LATER);
+	g_Handler->status=ALIVE;
+
 }
 
 void ServerTests::throttleCheck(){

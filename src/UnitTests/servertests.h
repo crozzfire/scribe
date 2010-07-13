@@ -32,5 +32,6 @@ protected:
 	void storeConfigCheck();
 	void newCategoryCheck();
 	void deleteCategoryMapCheck();
+
 };
 #endif /* SERVERTESTS_H_ */

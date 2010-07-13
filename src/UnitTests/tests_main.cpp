@@ -11,8 +11,8 @@ void startServer(void){
 
 	unsigned long int port=1463;
 	std::string config_file="/usr/local/scribe.conf";
-    	g_Handler = boost::shared_ptr<scribeHandler>(new scribeHandler	(port, config_file));
-    	g_Handler->initialize();
+    g_Handler = boost::shared_ptr<scribeHandler>(new scribeHandler(port, config_file));
+    g_Handler->initialize();
 }
 
 int main (int argc, char* argv[])
