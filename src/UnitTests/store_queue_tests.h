@@ -3,14 +3,14 @@
 
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
-#include "common.h"
-#include "conf.h"
+#include "Common.h"
+#include "Conf.h"
 
 //Exposing the class hack
 #define protected public
 #define private   public
-#include "store_queue.h"
-#include "scribe_server.h"
+#include "StoreQueue.h"
+#include "ScribeServer.h"
 #undef protected
 #undef private
 

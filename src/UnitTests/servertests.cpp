@@ -1,6 +1,6 @@
 #include "servertests.h"
-#include "common.h"
-#include "env_default.h"
+#include "Common.h"
+#include "EnvDefault.h"
 
 using namespace facebook::fb303;
 using namespace facebook;

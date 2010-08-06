@@ -1,8 +1,8 @@
 #include <boost/algorithm/string.hpp>
 #include "store_conf_tests.h"
-#include "common.h"
-#include "conf.h"
-#include "scribe_server.h"
+#include "Common.h"
+#include "Conf.h"
+#include "ScribeServer.h"
 
 using namespace boost;
 using namespace std;

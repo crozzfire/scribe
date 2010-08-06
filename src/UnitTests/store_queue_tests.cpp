@@ -1,4 +1,4 @@
-#include "common.h"
+#include "Common.h"
 #include "store_queue_tests.h"
 
 using namespace std;

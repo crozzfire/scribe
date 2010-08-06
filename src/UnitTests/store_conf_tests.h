@@ -3,8 +3,8 @@
 
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
-#include "common.h"
-#include "conf.h"
+#include "Common.h"
+#include "Conf.h"
 
 class StoreConfTests: public CPPUNIT_NS::TestFixture {
 
