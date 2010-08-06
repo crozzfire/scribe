@@ -7,6 +7,7 @@ using namespace facebook;
 
 using namespace scribe::thrift;
 using namespace std;
+using namespace scribe;
 
 CPPUNIT_TEST_SUITE_REGISTRATION(ServerTests);
 

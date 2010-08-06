@@ -4,6 +4,7 @@
 using namespace std;
 using namespace boost;
 using namespace scribe::thrift;
+using namespace scribe;
 
 CPPUNIT_TEST_SUITE_REGISTRATION(StoreQueueTests);
 

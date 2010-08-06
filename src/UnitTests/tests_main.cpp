@@ -7,6 +7,8 @@
 #include <fstream>
 #include "servertests.h"
 
+using namespace scribe;
+
 void startServer(void){
 
 	unsigned long int port=1463;

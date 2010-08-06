@@ -6,6 +6,7 @@
 
 using namespace boost;
 using namespace std;
+using namespace scribe;
 
 CPPUNIT_TEST_SUITE_REGISTRATION(StoreConfTests);
 void StoreConfTests::setUp(){
