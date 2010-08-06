@@ -65,6 +65,7 @@ endif
 AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/contrib
 AM_CPPFLAGS += -I$(fb303_home)/cpp/gen-cpp
 AM_CPPFLAGS += -I$(hadoop_home)/include
+AM_CPPFLAGS += -I$(cppunit_home)/include
 AM_CPPFLAGS += $(BOOST_CPPFLAGS)
 AM_CPPFLAGS += $(THRIFT_CPPFLAGS)
 AM_CPPFLAGS += $(FB_CPPFLAGS) $(DEBUG_CPPFLAGS)
@@ -97,17 +98,27 @@ endif
 
 # Binaries -- multiple progs can be defined.
 bin_PROGRAMS = scribed
+check_PROGRAMS = tests
 scribed_SOURCES = Main.cpp Conf.cpp ConnPool.cpp ScribeServer.cpp StatCounters.cpp StoreQueue.cpp TimeLatency.cpp \
 	          DynamicBucketUpdater.cpp NetworkDynamicConfig.cpp FileInterface.cpp StdFile.cpp \
                   Store.cpp BucketStore.cpp BufferStore.cpp FileStoreBase.cpp FileStore.cpp NetworkStore.cpp NullStore.cpp ThriftFileStore.cpp \
                   $(FB_SOURCES) $(ENV_SOURCES)
+
+test_SOURCES = 	  Main.cpp Conf.cpp ConnPool.cpp ScribeServer.cpp StatCounters.cpp StoreQueue.cpp TimeLatency.cpp \
+	          DynamicBucketUpdater.cpp NetworkDynamicConfig.cpp FileInterface.cpp StdFile.cpp \
+                  Store.cpp BucketStore.cpp BufferStore.cpp FileStoreBase.cpp FileStore.cpp NetworkStore.cpp NullStore.cpp ThriftFileStore.cpp \
+                  UnitTests/servertests.cpp UnitTests/store_queue_tests.cpp UnitTests/store_conf_tests.cpp UnitTests/tests_main.cpp 
+		  $(FB_SOURCES) $(ENV_SOURCES)
 if USE_SCRIBE_HDFS
   scribed_SOURCES += HdfsFile.cpp
+  tests_SOURCES += HdfsFile.cpp
 endif
 scribed_LDADD = $(EXTERNAL_LIBS) $(INTERNAL_LIBS)
+tests_LDADD = -L$(cppunit_home)/lib -lstdc++ -lcppunit -ldl $(EXTERNAL_LIBS) $(INTERNAL_LIBS)
 
 if SHARED
 scribed_DEPENDENCIES = libscribe.so
+tests_DEPENDENCIES = libscribe.so
 endif
 
 # Section 4 ##############################################################################
