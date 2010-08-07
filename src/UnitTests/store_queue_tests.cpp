@@ -47,7 +47,7 @@ void StoreQueueTests::addMessageCheck(){
 
 void StoreQueueTests::getCategoryHandledCheck(){
 	string category="bar";
-	boost::shared_ptr<StoreList> stores;
+	StoreListPtr stores;
 	StoreList::iterator iter;
 
 	stores=g_handler->categories_[category];
@@ -62,7 +62,6 @@ void StoreQueueTests::getCategoryHandledCheck(){
 		CPPUNIT_ASSERT((*iter)->getCategoryHandled() == category);
 		CPPUNIT_ASSERT((*iter)->getCategoryHandled() != "");
 	}
-
 }
 
 void StoreQueueTests::getStatusCheck(){

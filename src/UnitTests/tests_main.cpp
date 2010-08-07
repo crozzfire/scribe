@@ -9,7 +9,7 @@
 
 using namespace scribe;
 
-void startServer(void){
+void startScribe(void){
 
 	unsigned long int port=1463;
 	std::string config_file="/usr/local/scribe.conf";
@@ -19,7 +19,7 @@ void startServer(void){
 
 int main (int argc, char* argv[])
 {
-	startServer();
+	startScribe();
 
     // informs test-listener about testresults
     CPPUNIT_NS :: TestResult testresult;
