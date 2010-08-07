@@ -9,17 +9,23 @@
 
 using namespace scribe;
 
-void startScribe(void){
+void startScribe(string &conf_file){
 
 	unsigned long int port=1463;
-	std::string config_file="/usr/local/scribe.conf";
+	std::string config_file=conf_file;
     g_handler = boost::shared_ptr<ScribeHandler>(new ScribeHandler(port, config_file));
     g_handler->initialize();
 }
 
 int main (int argc, char* argv[])
 {
-	startScribe();
+	if(argc<2){
+		std::cout<<"Usage:\n ./tests <conf_file>\n";
+		exit(0);
+	}
+
+	string conf_file(argv[1]);
+	startScribe(conf_file);
 
     // informs test-listener about testresults
     CPPUNIT_NS :: TestResult testresult;

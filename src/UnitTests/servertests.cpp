@@ -130,10 +130,12 @@ void ServerTests::newCategoryCheck(){
 	CPPUNIT_ASSERT(cat_iter == g_handler->categories_.end());
 	CPPUNIT_ASSERT(testStoreList == NULL);
 
+/*
 	string regexCat="HelloWorld";
 	testStoreList=g_handler->createNewCategory(regexCat);
 	cat_iter = g_handler->categories_.find(regexCat);
 	CPPUNIT_ASSERT(cat_iter != g_handler->categories_.end());
+*/
 
 	//This filename is too long in most of the current OSes and should fail to create
 	string invalidCat="";
