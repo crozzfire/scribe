@@ -47,14 +47,14 @@ void StoreConfTests::getIntCheck(){
 	string test_int="test_int";
 	string number;
 	long int _testInt;
-	bool result = (g_Handler->getConfig()).getInt(test_int,_testInt);
+	bool result = (g_handler->getConfig()).getInt(test_int,&_testInt);
 	//Testing Overflow
 	if(result)
 	{
 		stringstream _temp;
 		_temp<<_testInt;
 
-		(g_Handler->getConfig()).getString(test_int,number);
+		(g_handler->getConfig()).getString(test_int,&number);
 		CPPUNIT_ASSERT(number==_temp.str());
 	}
 
@@ -64,31 +64,31 @@ void StoreConfTests::getUnsignedCheck(){
 	string test_unsigned="test_unsigned";
 	string number;
 	unsigned long int _testInt;
-	bool result = (g_Handler->getConfig()).getUnsigned(test_unsigned,_testInt);
+	bool result = (g_handler->getConfig()).getUnsigned(test_unsigned,&_testInt);
 	//Testing Overflow
 	if(result)
 	{
 		stringstream _temp;
 		_temp<<_testInt;
 
-		(g_Handler->getConfig()).getString(test_unsigned,number);
+		(g_handler->getConfig()).getString(test_unsigned,&number);
 		CPPUNIT_ASSERT(number==_temp.str());
 	}
 
 }
 
-void StoreConfTests::getUnsignedLongLongCheck(){
+void StoreConfTests::getUint64Check(){
 	string test_ull="test_ull";
 	string number;
 	unsigned long long int _testULL;
-	bool result = (g_Handler->getConfig()).getUnsignedLongLong(test_ull,_testULL);
+	bool result = (g_handler->getConfig()).getUint64(test_ull,&_testULL);
 	//Testing Overflow
 	if(result)
 	{
 		stringstream _temp;
 		_temp<<_testULL;
 
-		(g_Handler->getConfig()).getString(test_ull,number);
+		(g_handler->getConfig()).getString(test_ull,&number);
 		CPPUNIT_ASSERT(number==_temp.str());
 	}
 
@@ -98,13 +98,13 @@ void StoreConfTests::getFloatCheck(){
 	string test_float="test_float";
 	string number;
 	float _testFloat;
-	bool result = (g_Handler->getConfig()).getFloat(test_float,_testFloat);
+	bool result = (g_handler->getConfig()).getFloat(test_float,&_testFloat);
 	//Testing Precision Overflow
 	if(result)
 	{
 		stringstream _temp;
 		_temp<<_testFloat;
-		(g_Handler->getConfig()).getString(test_float,number);
+		(g_handler->getConfig()).getString(test_float,&number);
 		CPPUNIT_ASSERT(number==_temp.str());
 	}
 }
@@ -112,15 +112,15 @@ void StoreConfTests::getFloatCheck(){
 void StoreConfTests::getStringCheck(){
 	string test_string="test_string"; //set test_string="test1234" in the test conf file
 	string _testString;
-	bool result = (g_Handler->getConfig()).getString(test_string,_testString);
+	bool result = (g_handler->getConfig()).getString(test_string,&_testString);
 	if(result){
 		CPPUNIT_ASSERT(_testString=="test1234");
 	}
 }
 
 void StoreConfTests::getAllStoresCheck(){
-	StoreConf testConf=g_Handler->getConfig();
-	vector<pStoreConf> storeList;
-	testConf.getAllStores(storeList);
+	StoreConf testConf=g_handler->getConfig();
+	vector<StoreConfPtr> storeList;
+	testConf.getAllStores(&storeList);
 	CPPUNIT_ASSERT(storeList.size()>0);
 }

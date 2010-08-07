@@ -13,7 +13,7 @@ class StoreConfTests: public CPPUNIT_NS::TestFixture {
 		CPPUNIT_TEST(getAllStoresCheck);
 
 		CPPUNIT_TEST(getUnsignedCheck);
-		CPPUNIT_TEST(getUnsignedLongLongCheck);
+		CPPUNIT_TEST(getUint64Check);
 		CPPUNIT_TEST(getFloatCheck);
 		CPPUNIT_TEST(getStringCheck);
 		CPPUNIT_TEST(parseConfigCheck);
@@ -29,7 +29,7 @@ protected:
 	void getStoreCheck();
 	void getIntCheck();
 	void getUnsignedCheck();
-	void getUnsignedLongLongCheck();
+	void getUint64Check();
 	void getFloatCheck();
 	void getStringCheck();
 	void parseConfigCheck();

@@ -104,10 +104,10 @@ scribed_SOURCES = Main.cpp Conf.cpp ConnPool.cpp ScribeServer.cpp StatCounters.c
                   Store.cpp BucketStore.cpp BufferStore.cpp FileStoreBase.cpp FileStore.cpp NetworkStore.cpp NullStore.cpp ThriftFileStore.cpp \
                   $(FB_SOURCES) $(ENV_SOURCES)
 
-test_SOURCES = 	  Main.cpp Conf.cpp ConnPool.cpp ScribeServer.cpp StatCounters.cpp StoreQueue.cpp TimeLatency.cpp \
+tests_SOURCES = Conf.cpp ConnPool.cpp ScribeServer.cpp StatCounters.cpp StoreQueue.cpp TimeLatency.cpp \
 	          DynamicBucketUpdater.cpp NetworkDynamicConfig.cpp FileInterface.cpp StdFile.cpp \
                   Store.cpp BucketStore.cpp BufferStore.cpp FileStoreBase.cpp FileStore.cpp NetworkStore.cpp NullStore.cpp ThriftFileStore.cpp \
-                  UnitTests/servertests.cpp UnitTests/store_queue_tests.cpp UnitTests/store_conf_tests.cpp UnitTests/tests_main.cpp 
+                  UnitTests/servertests.cpp UnitTests/store_queue_tests.cpp UnitTests/store_conf_tests.cpp 
 		  $(FB_SOURCES) $(ENV_SOURCES)
 if USE_SCRIBE_HDFS
   scribed_SOURCES += HdfsFile.cpp

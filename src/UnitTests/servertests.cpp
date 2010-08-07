@@ -12,7 +12,7 @@ using namespace scribe;
 CPPUNIT_TEST_SUITE_REGISTRATION(ServerTests);
 
 void ServerTests::setUp(){
-	g_Handler->reinitialize();
+	g_handler->reinitialize();
 }
 
 void ServerTests::tearDown(){
@@ -35,7 +35,7 @@ void ServerTests::logResultCheck(){
 	messages.push_back(*msg);
 	messages.push_back(*b_msg);
 
-	result = g_Handler->Log(messages);
+	result = g_handler->Log(messages);
 
 	CPPUNIT_ASSERT(result == OK);
 	CPPUNIT_ASSERT(result != TRY_LATER);
@@ -46,12 +46,12 @@ void ServerTests::logResultCheck(){
 
 	vector<LogEntry> invalidCats;
 	invalidCats.push_back(*invalidCat);
-	g_Handler->status = STOPPING;
-	result = g_Handler->Log(invalidCats);
+	g_handler->status_ = STOPPING;
+	result = g_handler->Log(invalidCats);
 
 	CPPUNIT_ASSERT(result != OK);
 	CPPUNIT_ASSERT(result == TRY_LATER);
-	g_Handler->status=ALIVE;
+	g_handler->status_=ALIVE;
 
 }
 
@@ -74,7 +74,7 @@ void ServerTests::throttleCheck(){
 		messages.push_back(*msg);
 	}
 
-	ResultCode result = g_Handler->Log(messages);
+	ResultCode result = g_handler->Log(messages);
 	//Throttling check should Allow this because its a single huge packet
 	CPPUNIT_ASSERT(result == OK);
 
@@ -82,9 +82,9 @@ void ServerTests::throttleCheck(){
 	_temp.push_back(*msg);
 
 	huge_number=500;
-	while(huge_number--) g_Handler->Log(_temp);
+	while(huge_number--) g_handler->Log(_temp);
 
-	result=g_Handler->Log(_temp);
+	result=g_handler->Log(_temp);
 	//Throttling check should Deny now
 	CPPUNIT_ASSERT(result == TRY_LATER);
 }
@@ -93,47 +93,47 @@ void ServerTests::throttleCheck(){
 //or alternatively change the assertions according to the config file
 void ServerTests::storeConfigCheck(){
 
-	//StoreConf testConfig=g_Handler->getConfig();
+	//StoreConf testConfig=g_handler->getConfig();
 
 	StoreConf testConfig;
 	string testFileName="/tmp/scribe.conf";
 	testConfig.parseConfig(testFileName);
 	int numstores=0;
 	bool result;
-    std::vector<pStoreConf> store_confs;
-    testConfig.getAllStores(store_confs);
+    std::vector<StoreConfPtr> store_confs;
+    testConfig.getAllStores(&store_confs);
 
-    std::vector<pStoreConf>::iterator iter = store_confs.begin();
-    result= g_Handler->configureStore(*iter, &numstores);
+    std::vector<StoreConfPtr>::iterator iter = store_confs.begin();
+    result= g_handler->configureStore(*iter, &numstores);
     CPPUNIT_ASSERT(result == false);
     CPPUNIT_ASSERT(numstores==0);
     ++iter;
 
-    result= g_Handler->configureStore(*iter, &numstores);
+    result= g_handler->configureStore(*iter, &numstores);
     CPPUNIT_ASSERT(result == true);
     CPPUNIT_ASSERT(numstores==1);
     ++iter;
 
-    result= g_Handler->configureStore(*iter, &numstores);
+    result= g_handler->configureStore(*iter, &numstores);
     CPPUNIT_ASSERT(result == false);
     CPPUNIT_ASSERT(numstores==1);
 }
 
 void ServerTests::newCategoryCheck(){
-	boost::shared_ptr<store_list_t> testStoreList;
-	category_map_t::iterator cat_iter;
+	boost::shared_ptr<StoreList> testStoreList;
+	CategoryMap::iterator cat_iter;
 
 	string nonRegexCat="helloWorld";
-	testStoreList=g_Handler->createNewCategory(nonRegexCat);
-	//Will not be added to categories map, as non_Model categories are added during initialization time.
-	cat_iter = g_Handler->categories.find(nonRegexCat);
-	CPPUNIT_ASSERT(cat_iter == g_Handler->categories.end());
+	testStoreList=g_handler->createNewCategory(nonRegexCat);
+	//Will not be added to categories_ map, as non_Model categories_ are added during initialization time.
+	cat_iter = g_handler->categories_.find(nonRegexCat);
+	CPPUNIT_ASSERT(cat_iter == g_handler->categories_.end());
 	CPPUNIT_ASSERT(testStoreList == NULL);
 
 	string regexCat="HelloWorld";
-	testStoreList=g_Handler->createNewCategory(regexCat);
-	cat_iter = g_Handler->categories.find(regexCat);
-	CPPUNIT_ASSERT(cat_iter != g_Handler->categories.end());
+	testStoreList=g_handler->createNewCategory(regexCat);
+	cat_iter = g_handler->categories_.find(regexCat);
+	CPPUNIT_ASSERT(cat_iter != g_handler->categories_.end());
 
 	//This filename is too long in most of the current OSes and should fail to create
 	string invalidCat="";
@@ -141,31 +141,33 @@ void ServerTests::newCategoryCheck(){
 	while(largeNum--) invalidCat+="Abcdef12";
 
 	try{
-	testStoreList=g_Handler->createNewCategory(invalidCat);
+	testStoreList=g_handler->createNewCategory(invalidCat);
 	}catch(exception e){}
 
-	cat_iter = g_Handler->categories.find(invalidCat);
-	CPPUNIT_ASSERT(cat_iter == g_Handler->categories.end());
+	cat_iter = g_handler->categories_.find(invalidCat);
+	CPPUNIT_ASSERT(cat_iter == g_handler->categories_.end());
 
 }
 
 void ServerTests::deleteCategoryMapCheck(){
 
-	category_map_t::iterator cat_iter;
+	CategoryMap::iterator cat_iter;
 
-	category_map_t catCopy=g_Handler->categories;
-	g_Handler->deleteCategoryMap(catCopy);
+	CategoryMap catCopy=g_handler->categories_;
+	g_handler->deleteCategoryMap(catCopy);
 	cat_iter = catCopy.begin();
 	CPPUNIT_ASSERT(cat_iter==catCopy.end());
 
-	category_map_t regexCatCopy=g_Handler->category_regex;
-	g_Handler->deleteCategoryMap(regexCatCopy);
+	//Unit Tests for Regex Stores
+	/*
+	CategoryMap regexCatCopy=g_handler->category_regex;
+	g_handler->deleteCategoryMap(regexCatCopy);
 	cat_iter = regexCatCopy.begin();
 	CPPUNIT_ASSERT(cat_iter==regexCatCopy.end());
 
-	category_map_t blacklistCatCopy=g_Handler->category_regex_blacklist;
-	g_Handler->deleteCategoryMap(blacklistCatCopy);
+	CategoryMap blacklistCatCopy=g_handler->category_regex_blacklist;
+	g_handler->deleteCategoryMap(blacklistCatCopy);
 	cat_iter = blacklistCatCopy.begin();
 	CPPUNIT_ASSERT(cat_iter==blacklistCatCopy.end());
-
+	*/
 }

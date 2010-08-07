@@ -5,7 +5,7 @@
 #include <cppunit/TestRunner.h>
 #include <cppunit/BriefTestProgressListener.h>
 #include <fstream>
-#include "servertests.h"
+#include "ScribeServer.h"
 
 using namespace scribe;
 
@@ -13,8 +13,8 @@ void startServer(void){
 
 	unsigned long int port=1463;
 	std::string config_file="/usr/local/scribe.conf";
-    g_Handler = boost::shared_ptr<scribeHandler>(new scribeHandler(port, config_file));
-    g_Handler->initialize();
+    g_handler = boost::shared_ptr<ScribeHandler>(new ScribeHandler(port, config_file));
+    g_handler->initialize();
 }
 
 int main (int argc, char* argv[])
